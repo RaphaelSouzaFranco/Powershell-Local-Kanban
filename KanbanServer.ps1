@@ -62,7 +62,7 @@ document.getElementById('hours').value=`${hrs}h ${mins}m`;
 }
 function render(){
 ['backlog','desenvolvendo','concluido'].forEach(col=>{document.getElementById('col-'+col).innerHTML='';});
-cards.forEach(c=>{
+[...cards].reverse().forEach(c=>{
 const el=document.createElement('div');
 el.className='bg-white p-4 rounded-lg shadow-sm border-l-4 cursor-grab hover:shadow-md relative group ';
 el.className+=(c.column==='backlog'?'border-slate-500':c.column==='desenvolvendo'?'border-blue-500':'border-green-500');
