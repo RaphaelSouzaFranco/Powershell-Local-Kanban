@@ -12,34 +12,69 @@ $htmlContent=@'
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PowerShell Kanban</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<style>.kanban-col{min-height:250px}.drag-over{background-color:rgba(0,0,0,0.05);border-radius:0.5rem;}</style>
+<script>tailwind.config={darkMode:'class'}</script>
+<style>.kanban-col{min-height:250px}.drag-over{background-color:rgba(0,0,0,0.05);border-radius:0.5rem;}.dark .drag-over{background-color:rgba(255,255,255,0.05);}</style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans p-4 md:p-8">
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans p-4 md:p-8 transition-colors duration-200">
 <div class="max-w-7xl mx-auto">
-<h1 class="text-3xl font-extrabold mb-8 text-center text-slate-700">&#128204; PowerShell Kanban</h1>
-<div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
+
+<div class="flex justify-between items-center mb-8">
+<div class="w-10"></div>
+<h1 class="text-3xl font-extrabold text-slate-700 dark:text-slate-200">&#128204; PowerShell Kanban</h1>
+<button onclick="toggleTheme()" class="p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors" title="Alternar Tema">&#127762;</button>
+</div>
+
+<!-- Filtros -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-6 flex flex-col md:flex-row gap-4">
+<div class="flex-1"><label class="block text-sm font-semibold mb-1 text-slate-600 dark:text-slate-400">&#128269; Buscar por T&iacute;tulo ou Projeto</label><input type="text" id="filterText" oninput="render()" class="w-full border dark:border-slate-600 rounded p-2 outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:text-white" placeholder="Digite para buscar..."></div>
+<div><label class="block text-sm font-semibold mb-1 text-slate-600 dark:text-slate-400">&#128197; Filtrar por Data</label><input type="date" id="filterDate" onchange="render()" class="w-full border dark:border-slate-600 rounded p-2 outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:text-white"></div>
+<div class="flex items-end"><button onclick="limparFiltros()" class="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-white font-bold py-2 px-4 rounded w-full md:w-auto">Limpar</button></div>
+</div>
+
+<!-- Formulario -->
+<div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-8">
 <form id="cardForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
 <input type="hidden" id="cardId">
-<div class="md:col-span-2"><label class="block text-sm font-semibold mb-1 text-slate-600">T&iacute;tulo</label><input type="text" id="title" required class="w-full border rounded p-2 outline-none focus:ring-2 focus:ring-blue-500"></div>
-<div class="md:col-span-2"><label class="block text-sm font-semibold mb-1 text-slate-600">Projeto</label><input type="text" id="project" required class="w-full border rounded p-2 outline-none focus:ring-2 focus:ring-blue-500"></div>
+<div class="md:col-span-2"><label class="block text-sm font-semibold mb-1 text-slate-600 dark:text-slate-400">T&iacute;tulo</label><input type="text" id="title" required class="w-full border dark:border-slate-600 rounded p-2 outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:text-white"></div>
+<div class="md:col-span-2"><label class="block text-sm font-semibold mb-1 text-slate-600 dark:text-slate-400">Projeto</label><input type="text" id="project" required class="w-full border dark:border-slate-600 rounded p-2 outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:text-white"></div>
 
-<div><label class="block text-sm font-semibold mb-1 text-slate-600">Data</label><input type="date" id="date" required class="w-full border rounded p-2 outline-none focus:ring-2 focus:ring-blue-500"></div>
-<div><label class="block text-sm font-semibold mb-1 text-slate-600">In&iacute;cio</label><input type="time" id="startTime" class="w-full border rounded p-2 outline-none focus:ring-2 focus:ring-blue-500" onchange="calcHours()"></div>
-<div><label class="block text-sm font-semibold mb-1 text-slate-600">T&eacute;rmino</label><input type="time" id="endTime" class="w-full border rounded p-2 outline-none focus:ring-2 focus:ring-blue-500" onchange="calcHours()"></div>
-<div><label class="block text-sm font-semibold mb-1 text-slate-600">Horas Gastas</label><input type="text" id="hours" readonly placeholder="Calculado..." class="w-full border rounded p-2 bg-slate-100 text-slate-500 outline-none"></div>
+<div><label class="block text-sm font-semibold mb-1 text-slate-600 dark:text-slate-400">Data</label><input type="date" id="date" required class="w-full border dark:border-slate-600 rounded p-2 outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:text-white"></div>
+<div><label class="block text-sm font-semibold mb-1 text-slate-600 dark:text-slate-400">In&iacute;cio</label><input type="time" id="startTime" class="w-full border dark:border-slate-600 rounded p-2 outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:text-white" onchange="calcHours()"></div>
+<div><label class="block text-sm font-semibold mb-1 text-slate-600 dark:text-slate-400">T&eacute;rmino</label><input type="time" id="endTime" class="w-full border dark:border-slate-600 rounded p-2 outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:text-white" onchange="calcHours()"></div>
+<div><label class="block text-sm font-semibold mb-1 text-slate-600 dark:text-slate-400">Horas Gastas</label><input type="text" id="hours" readonly placeholder="Calculado..." class="w-full border dark:border-slate-600 rounded p-2 bg-slate-100 dark:bg-slate-600 text-slate-500 dark:text-slate-300 outline-none cursor-not-allowed"></div>
 
-<div class="md:col-span-4"><label class="block text-sm font-semibold mb-1 text-slate-600">Coluna</label><select id="column" class="w-full border rounded p-2 outline-none focus:ring-2 focus:ring-blue-500"><option value="backlog">Backlog</option><option value="desenvolvendo">Desenvolvendo</option><option value="concluido">Conclu&iacute;do</option></select></div>
-<div class="md:col-span-4"><label class="block text-sm font-semibold mb-1 text-slate-600">Descri&ccedil;&atilde;o</label><textarea id="description" rows="2" class="w-full border rounded p-2 outline-none focus:ring-2 focus:ring-blue-500"></textarea></div>
-<div class="md:col-span-4"><button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700">Salvar Card</button></div>
+<div class="md:col-span-4"><label class="block text-sm font-semibold mb-1 text-slate-600 dark:text-slate-400">Coluna</label><select id="column" class="w-full border dark:border-slate-600 rounded p-2 outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:text-white"><option value="backlog">Backlog</option><option value="desenvolvendo">Desenvolvendo</option><option value="concluido">Conclu&iacute;do</option></select></div>
+<div class="md:col-span-4"><label class="block text-sm font-semibold mb-1 text-slate-600 dark:text-slate-400">Descri&ccedil;&atilde;o</label><textarea id="description" rows="2" class="w-full border dark:border-slate-600 rounded p-2 outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:text-white"></textarea></div>
+<div class="md:col-span-4"><button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700 transition-colors">Salvar Card</button></div>
 </form>
 </div>
+
+<!-- Board -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-<div class="bg-slate-200 rounded-xl p-4 shadow-inner"><h2 class="text-lg font-bold mb-4 text-slate-700 uppercase tracking-wide">Backlog</h2><div id="col-backlog" class="kanban-col space-y-4" ondrop="drop(event, 'backlog')" ondragover="allowDrop(event)"></div></div>
-<div class="bg-blue-50 rounded-xl p-4 shadow-inner border border-blue-100"><h2 class="text-lg font-bold mb-4 text-blue-800 uppercase tracking-wide">Desenvolvendo</h2><div id="col-desenvolvendo" class="kanban-col space-y-4" ondrop="drop(event, 'desenvolvendo')" ondragover="allowDrop(event)"></div></div>
-<div class="bg-green-50 rounded-xl p-4 shadow-inner border border-green-100"><h2 class="text-lg font-bold mb-4 text-green-800 uppercase tracking-wide">Conclu&iacute;do</h2><div id="col-concluido" class="kanban-col space-y-4" ondrop="drop(event, 'concluido')" ondragover="allowDrop(event)"></div></div>
+<div class="bg-slate-200 dark:bg-slate-800/50 rounded-xl p-4 shadow-inner"><h2 class="text-lg font-bold mb-4 text-slate-700 dark:text-slate-300 uppercase tracking-wide">Backlog</h2><div id="col-backlog" class="kanban-col space-y-4" ondrop="drop(event, 'backlog')" ondragover="allowDrop(event)"></div></div>
+<div class="bg-blue-50 dark:bg-blue-900/10 rounded-xl p-4 shadow-inner border border-blue-100 dark:border-blue-900"><h2 class="text-lg font-bold mb-4 text-blue-800 dark:text-blue-400 uppercase tracking-wide">Desenvolvendo</h2><div id="col-desenvolvendo" class="kanban-col space-y-4" ondrop="drop(event, 'desenvolvendo')" ondragover="allowDrop(event)"></div></div>
+<div class="bg-green-50 dark:bg-green-900/10 rounded-xl p-4 shadow-inner border border-green-100 dark:border-green-900"><h2 class="text-lg font-bold mb-4 text-green-800 dark:text-green-400 uppercase tracking-wide">Conclu&iacute;do</h2><div id="col-concluido" class="kanban-col space-y-4" ondrop="drop(event, 'concluido')" ondragover="allowDrop(event)"></div></div>
 </div>
 </div>
+
+<!-- Toast Container -->
+<div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
 <script>
+if(localStorage.theme==='dark' || (!('theme' in localStorage)&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}
+function toggleTheme(){
+document.documentElement.classList.toggle('dark');
+localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+}
+
+function showToast(msg, type='success'){
+const t=document.createElement('div');
+t.className=`px-4 py-3 rounded shadow-lg text-white text-sm font-medium transition-all duration-500 transform translate-y-0 opacity-100 ${type==='success'?'bg-green-600':'bg-red-600'}`;
+t.innerHTML = (type==='success'?'&#10004;&#65039; ':'&#9888;&#65039; ') + msg;
+document.getElementById('toastContainer').appendChild(t);
+setTimeout(()=>{t.classList.add('opacity-0','translate-y-2');setTimeout(()=>t.remove(),500)}, 3000);
+}
+
 let cards=[];
 async function loadData(){
 try{const r=await fetch('/api/data');cards=await r.json();if(!Array.isArray(cards))cards=[];render();}catch(e){}
@@ -47,6 +82,7 @@ try{const r=await fetch('/api/data');cards=await r.json();if(!Array.isArray(card
 async function saveData(){
 try{await fetch('/api/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cards)});}catch(e){}
 }
+
 function calcHours(){
 const s=document.getElementById('startTime').value;
 const e=document.getElementById('endTime').value;
@@ -60,11 +96,25 @@ const mins=diff%60;
 document.getElementById('hours').value=`${hrs}h ${mins}m`;
 }else{document.getElementById('hours').value='';}
 }
+
+function limparFiltros(){
+document.getElementById('filterText').value='';
+document.getElementById('filterDate').value='';
+render();
+}
+
 function render(){
+const ft=document.getElementById('filterText').value.toLowerCase();
+const fd=document.getElementById('filterDate').value;
 ['backlog','desenvolvendo','concluido'].forEach(col=>{document.getElementById('col-'+col).innerHTML='';});
-[...cards].reverse().forEach(c=>{
+
+let filtered = cards;
+if(ft) filtered = filtered.filter(c=>(c.title||'').toLowerCase().includes(ft) || (c.project||'').toLowerCase().includes(ft));
+if(fd) filtered = filtered.filter(c=>c.date === fd);
+
+[...filtered].reverse().forEach(c=>{
 const el=document.createElement('div');
-el.className='bg-white p-4 rounded-lg shadow-sm border-l-4 cursor-grab hover:shadow-md relative group ';
+el.className='bg-white dark:bg-slate-700 p-4 rounded-lg shadow-sm border-l-4 cursor-grab hover:shadow-md relative group ';
 el.className+=(c.column==='backlog'?'border-slate-500':c.column==='desenvolvendo'?'border-blue-500':'border-green-500');
 el.draggable=true; el.id=c.id;
 el.ondragstart=(e)=>{e.dataTransfer.setData("id",c.id);setTimeout(()=>el.classList.add('opacity-50'),0);};
@@ -72,22 +122,27 @@ el.ondragend=()=>el.classList.remove('opacity-50');
 
 const dataFormatada=c.date?c.date.split('-').reverse().join('/'):'Sem data';
 el.innerHTML=`
-<div class="flex justify-between items-start mb-2"><h3 class="font-bold text-slate-800 leading-tight pr-2">${c.title}</h3>
-<div class="flex space-x-2"><button onclick="editCard('${c.id}')" class="text-slate-400 hover:text-blue-600">&#9999;&#65039;</button><button onclick="delCard('${c.id}')" class="text-slate-400 hover:text-red-600">&#128465;&#65039;</button></div></div>
-<div class="text-xs font-semibold text-slate-500 mb-1">&#128193; ${c.project}</div>
-<div class="text-xs text-slate-400 font-medium mb-3">&#128197; ${dataFormatada} | &#9200; ${c.startTime||'--'} &agrave;s ${c.endTime||'--'}</div>
-${c.description?`<p class="text-sm text-slate-600 mb-3 whitespace-pre-wrap">${c.description}</p>`:''}
-<div class="flex justify-end mt-2"><span class="bg-slate-100 text-slate-600 text-xs py-1 px-2 rounded font-medium border">&#9201;&#65039; Total: ${c.hours||'0h 0m'}</span></div>`;
+<div class="flex justify-between items-start mb-2"><h3 class="font-bold text-slate-800 dark:text-slate-100 leading-tight pr-2">${c.title}</h3>
+<div class="flex space-x-2"><button onclick="editCard('${c.id}')" class="text-slate-400 hover:text-blue-500 dark:hover:text-blue-400">&#9999;&#65039;</button><button onclick="delCard('${c.id}')" class="text-slate-400 hover:text-red-500 dark:hover:text-red-400">&#128465;&#65039;</button></div></div>
+<div class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">&#128193; ${c.project}</div>
+<div class="text-xs text-slate-400 dark:text-slate-500 font-medium mb-3">&#128197; ${dataFormatada} | &#9200; ${c.startTime||'--'} &agrave;s ${c.endTime||'--'}</div>
+${c.description?`<p class="text-sm text-slate-600 dark:text-slate-300 mb-3 whitespace-pre-wrap">${c.description}</p>`:''}
+<div class="flex justify-end mt-2"><span class="bg-slate-100 dark:bg-slate-600 text-slate-600 dark:text-slate-300 text-xs py-1 px-2 rounded font-medium border dark:border-slate-500">&#9201;&#65039; Total: ${c.hours||'0h 0m'}</span></div>`;
 document.getElementById('col-'+c.column).appendChild(el);
 });
 }
+
 function allowDrop(e){e.preventDefault();}
 function drop(e,col){
 e.preventDefault();
 const id=e.dataTransfer.getData("id");
 const card=cards.find(x=>x.id===id);
-if(card && card.column!==col){card.column=col;saveData();render();}
+if(card && card.column!==col){
+const colNames = {backlog:'Backlog', desenvolvendo:'Desenvolvendo', concluido:'Concluído'};
+card.column=col; saveData(); render(); showToast(`Movido para ${colNames[col]}`);
 }
+}
+
 document.getElementById('cardForm').onsubmit=(e)=>{
 e.preventDefault();
 const id=document.getElementById('cardId').value;
@@ -96,8 +151,8 @@ const dt=document.getElementById('date').value; const st=document.getElementById
 const et=document.getElementById('endTime').value;
 const h=document.getElementById('hours').value; const c=document.getElementById('column').value;
 const d=document.getElementById('description').value;
-if(id){const card=cards.find(x=>x.id===id); card.title=t;card.project=p;card.date=dt;card.startTime=st;card.endTime=et;card.hours=h;card.column=c;card.description=d;}
-else{cards.push({id:'c'+Date.now(),title:t,project:p,date:dt,startTime:st,endTime:et,hours:h,column:c,description:d});}
+if(id){const card=cards.find(x=>x.id===id); card.title=t;card.project=p;card.date=dt;card.startTime=st;card.endTime=et;card.hours=h;card.column=c;card.description=d; showToast('Card atualizado com sucesso!');}
+else{cards.push({id:'c'+Date.now(),title:t,project:p,date:dt,startTime:st,endTime:et,hours:h,column:c,description:d}); showToast('Novo card criado!');}
 saveData();render();e.target.reset();document.getElementById('cardId').value='';
 };
 window.editCard=(id)=>{
@@ -109,7 +164,7 @@ document.getElementById('hours').value=c.hours||'';
 document.getElementById('column').value=c.column; document.getElementById('description').value=c.description;
 window.scrollTo({top:0,behavior:'smooth'});
 };
-window.delCard=(id)=>{if(confirm('Excluir card permanentemente?')){cards=cards.filter(x=>x.id!==id);saveData();render();}};
+window.delCard=(id)=>{if(confirm('Tem certeza que deseja excluir?')){cards=cards.filter(x=>x.id!==id);saveData();render();showToast('Card excluído!', 'error');}};
 loadData();
 </script>
 </body>
